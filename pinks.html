@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&amp;display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            max-width: 1320px;
+            margin: 0 auto;
+            background-color: #fff5f8;
+            color: #333;
+            padding: 16px;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            color: #ff4d94;
+        }
+        .container {
+            padding: 20px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(255,105,180,0.15);
+            margin-bottom: 16px;
+        }
+        .header-banner {
+            background: linear-gradient(to right, #ff4d94, #c77dff);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .header-banner h1 {
+            color: white;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .header-banner p {
+            margin: 0;
+            font-size: 1.1em;
+        }
+
+        /* KPI Cards */
+        .kpi-cards {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .kpi-card {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(255,105,180,0.15);
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out, background-color 0.25s ease-in-out;
+        }
+        .kpi-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 30px rgba(255,105,180,0.25);
+            background-color: #fff0f5; /* Pale pink tint */
+        }
+        .kpi-card .num {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ff4d94;
+            display: block;
+            line-height: 1;
+        }
+        .kpi-card .unit {
+            font-size: 1.2em;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .kpi-card .label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .kpi-card .date {
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 16px;
+        }
+        .tab-button {
+            flex-grow: 1;
+            padding: 15px 10px;
+            background-color: white;
+            border: none;
+            border-radius: 20px 20px 0 0;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            color: #ff4d94;
+            transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out;
+            box-shadow: 0 4px 20px rgba(255,105,180,0.15);
+            margin-right: 4px; /* Small gap between tabs */
+        }
+        .tab-button:last-child {
+            margin-right: 0;
+        }
+        .tab-button:hover {
+            background-color: #fff0f5;
+        }
+        .tab-button.active {
+            background-color: #ff4d94;
+            color: white;
+            box-shadow: 0 6px 25px rgba(255,77,148,0.3);
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background-color: white;
+            border-radius: 0 20px 20px 20px;
+            box-shadow: 0 4px 20px rgba(255,105,180,0.15);
+            min-height: 350px; /* Ensure consistent height */
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-kpis {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab-kpi {
+            text-align: center;
+            padding: 10px;
+            min-width: 120px;
+        }
+        .tab-kpi .num {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #c77dff; /* Lilac accent */
+            display: block;
+        }
+        .tab-kpi .unit {
+            font-size: 1em;
+            display: block;
+        }
+        .tab-kpi .label {
+            font-size: 0.8em;
+            color: #666;
+        }
+        .chart-container {
+            position: relative;
+            height: 320px;
+            width: 100%;
+        }
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Survival Grid */
+        .survival-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .survival-square {
+            width: 100%;
+            padding-top: 100%; /* Makes squares */
+            position: relative;
+            border-radius: 8px;
+            transition: transform 0.25s ease-in-out;
+            cursor: help;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .survival-square:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+        .survival-square span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .tooltip {
+            visibility: hidden;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the square */
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 0.8em;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .survival-square:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+
+        /* Laundry Cards */
+        .laundry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .laundry-card {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+            position: relative;
+            cursor: help;
+        }
+        .laundry-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .laundry-card .emoji {
+            font-size: 40px;
+            margin-bottom: 5px;
+            line-height: 1;
+        }
+        .laundry-card .date {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .laundry-card .score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ff4d94;
+            margin-bottom: 5px;
+        }
+        .laundry-card .band {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #333;
+        }
+        .laundry-card .tooltip {
+            bottom: 105%; /* Position above the card */
+        }
+
+        /* Laundry Card Colors */
+        .laundry-perfect { background-color: #e6ffe6; border: 1px solid #66cc66; } /* Light Green */
+        .laundry-good { background-color: #ffffcc; border: 1px solid #cccc00; } /* Light Yellow */
+        .laundry-slow { background-color: #ffe0b3; border: 1px solid #ff9933; } /* Light Orange */
+        .laundry-indoors { background-color: #ffcccc; border: 1px solid #ff6666; } /* Light Red */
+        .laundry-bother { background-color: #f0f0f0; border: 1px solid #999999; } /* Grey */
+
+        /* Closing Statement */
+        .closing-statement {
+            background-color: #fff0f5; /* Pale pink tint */
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.1em;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const days = [
+            {date:"2026-07-05", tmax:9.2, tmin:-0.8, tmean:4.7, precip:0.00, sun:20.34, wind:15.3, code:"Overcast", survival:98, laundry:81},
+            {date:"2026-07-06", tmax:10.8, tmin:2.1, tmean:7.0, precip:0.30, sun:12.37, wind:14.4, code:"Drizzle", survival:99, laundry:69},
+            {date:"2026-07-07", tmax:11.3, tmin:4.8, tmean:8.0, precip:0.70, sun:8.70, wind:21.1, code:"Drizzle", survival:98, laundry:64},
+            {date:"2026-07-08", tmax:11.7, tmin:6.2, tmean:8.8, precip:1.10, sun:10.03, wind:15.9, code:"Drizzle", survival:99, laundry:59},
+            {date:"2026-07-09", tmax:7.4, tmin:2.9, tmean:5.4, precip:5.70, sun:12.79, wind:20.5, code:"Rain", survival:94, laundry:0},
+            {date:"2026-07-10", tmax:7.2, tmin:2.1, tmean:3.9, precip:7.40, sun:5.48, wind:25.7, code:"Drizzle", survival:88, laundry:0},
+            {date:"2026-07-11", tmax:10.5, tmin:2.5, tmean:7.3, precip:0.10, sun:15.38, wind:31.8, code:"Drizzle", survival:90, laundry:72}
+        ];
+    </script>
+
+    <div class="header-banner">
+        <h1>Weather Report</h1>
+        <p>near Akureyri, Iceland (65.27241, -18.707855)</p>
+        <p>Data for July 05, 2026 to July 11, 2026 (7 days)</p>
+    </div>
+
+    <div class="kpi-cards">
+        <div class="kpi-card">
+            <span class="num">11.7</span><span class="unit">°C</span>
+            <div class="label">Warmest Day</div>
+            <div class="date">July 08, 2026</div>
+        </div>
+        <div class="kpi-card">
+            <span class="num">-0.8</span><span class="unit">°C</span>
+            <div class="label">Coldest Day</div>
+            <div class="date">July 05, 2026</div>
+        </div>
+        <div class="kpi-card">
+            <span class="num">6.4</span><span class="unit">°C</span>
+            <div class="label">Mean Temperature</div>
+        </div>
+        <div class="kpi-card">
+            <span class="num">15.30</span><span class="unit">mm</span>
+            <div class="label">Total Rainfall</div>
+        </div>
+        <div class="kpi-card">
+            <span class="num">85.09</span><span class="unit">hours</span>
+            <div class="label">Total Sunshine</div>
+        </div>
+        <div class="kpi-card">
+            <span class="num">31.8</span><span class="unit">km/h</span>
+            <div class="label">Peak Wind Speed</div>
+            <div class="date">July 11, 2026</div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-button" onclick="openTab(event, 'temperature')">Temperature</button>
+        <button class="tab-button" onclick="openTab(event, 'precipitation')">Precipitation</button>
+        <button class="tab-button" onclick="openTab(event, 'sunshine')">Sunshine</button>
+        <button class="tab-button" onclick="openTab(event, 'wind')">Wind</button>
+        <button class="tab-button" onclick="openTab(event, 'conditions')">Conditions</button>
+        <button class="tab-button" onclick="openTab(event, 'survival')">Survival Rating</button>
+        <button class="tab-button" onclick="openTab(event, 'laundry')">Laundry Index</button>
+    </div>
+
+    <div id="temperature" class="tab-content container" style="display: none;">
+        <h2>Temperature Overview</h2>
+        <div class="tab-kpis">
+            <div class="tab-kpi">
+                <span class="num">11.7</span><span class="unit">°C</span>
+                <div class="label">Max Temp</div>
+            </div>
+            <div class="tab-kpi">
+                <span class="num">-0.8</span><span class="unit">°C</span>
+                <div class="label">Min Temp</div>
+            </div>
+            <div class="tab-kpi">
+                <span class="num">6.4</span><span class="unit">°C</span>
+                <div class="label">Mean Temp</div>
+            </div>
+        </div>
+        <div class="chart-container"><canvas id="temperatureChart"></canvas></div>
+        <p>The maximum temperature recorded was 9.2°C on July 05, 2026, and it increased to 10.5°C by July 11, 2026. The minimum temperature started at -0.8°C on July 05, 2026, and was 2.5°C on July 11, 2026.</p>
+    </div>
+
+    <div id="precipitation" class="tab-content container" style="display: none;">
+        <h2>Precipitation Overview</h2>
+        <div class="tab-kpis">
+            <div class="tab-kpi">
+                <span class="num">15.30</span><span class="unit">mm</span>
+                <div class="label">Total Rainfall</div>
+            </div>
+            <div class="tab-kpi">
+                <span class="num">7.40</span><span class="unit">mm</span>
+                <div class="label">Max Daily Rainfall</div>
+            </div>
+            <div class="tab-kpi">
+                <span class="num">6</span><span class="unit">days</span>
+                <div class="label">Days with Rain</div>
+            </div>
+        </div>
+        <div class="chart-container"><canvas id="precipitationChart"></canvas></div>
+        <p>Precipitation on July 05, 2026 was 0.00 mm, while on July 11, 2026 it was 0.10 mm. The highest daily precipitation occurred on July 10, 2026 with 7.40 mm.</p>
+    </div>
+
+    <div id="sunshine" class="tab-content container" style="display: none;">
+        <h2>Sunshine Overview</h2>
+        <div class="tab-kpis">
+            <div class="tab-kpi">
+                <span class="num">85.09</span><span class="unit">hours</span>
+                <div class="label">Total Sunshine</div>
+            </div>
+            <div class="tab-kpi">
+                <span class="num">20.34</span><span class="unit">hours</span>
+                <div class="label">Max Daily Sunshine</div>
+            </div>
+            <div class="tab-kpi">
+                <span class="num">12.16</span><span class="unit">hours</span>
+                <div class="label">Mean Daily Sunshine</div>
+            </div>
+        </div>
+        <div class="chart-container"><canvas id="sunshineChart"></canvas></div>
+        <p>Sunshine duration on July 05, 2026 was 20.34 hours, decreasing to 15.38 hours on July 11, 2026. The lowest sunshine duration was 5.48 hours on July 10, 2026.</p>
+    </div>
+
+    <div id="wind" class="tab-content container" style="display: none;">
+        <h2>Wind Speed Overview</h2>
+        <div class="tab-kpis">
+            <div class="tab-kpi">
+                <span class="num">31.8</span><span class="unit">km/h</span>
+                <div class="label">Peak Wind Speed</div>
+            </div>
+            <div class="tab-kpi">
+                <span class="num">20.2</span><span class="unit">km/h</span>
+                <div class="label">Mean Max Wind Speed</div>
+            </div>
+        </div>
+        <div class="chart-container"><canvas id="windChart"></canvas></div>
+        <p>Maximum wind speed on July 05, 2026 was 15.3 km/h, increasing to 31.8 km/h on July 11, 2026. The period's peak wind speed was 31.8 km/h on July 11, 2026.</p>
+    </div>
+
+    <div id="conditions" class="tab-content container" style="display: none;">
+        <h2>Weather Conditions Overview</h2>
+        <div class="tab-kpis">
+            <div class="tab-kpi">
+                <span class="num">Drizzle</span>
+                <div class="label">Most Common</div>
+            </div>
+            <div class="tab-kpi">
+                <span class="num">Overcast, Rain</span>
+                <div class="label">Least Common</div>
+            </div>
+        </div>
+        <div class="chart-container"><canvas id="conditionsChart"></canvas></div>
+        <p>The period began on July 05, 2026 with overcast conditions, and ended on July 11, 2026 with drizzle. Drizzle was the most frequent condition, occurring on 5 days.</p>
+    </div>
+
+    <div id="survival" class="tab-content container" style="display: none;">
+        <h2>Survival Rating</h2>
+        <p>The average survival score for the period was 95. The best day was July 06, 2026 and July 08, 2026 with a score of 99. The worst day was July 10, 2026 with a score of 88.</p>
+        <div id="survivalGrid" class="survival-grid"><div class="survival-square" style="background-color: rgb(10, 255, 0);">
+                    <span>98</span>
+                    <div class="tooltip">
+                        07-05<br>
+                        Score: 98<br>
+                        Temp: -0.8°C / 9.2°C<br>
+                        Rain: 0mm<br>
+                        Wind: 15.3km/h
+                    </div>
+                </div><div class="survival-square" style="background-color: rgb(5, 255, 0);">
+                    <span>99</span>
+                    <div class="tooltip">
+                        07-06<br>
+                        Score: 99<br>
+                        Temp: 2.1°C / 10.8°C<br>
+                        Rain: 0.3mm<br>
+                        Wind: 14.4km/h
+                    </div>
+                </div><div class="survival-square" style="background-color: rgb(10, 255, 0);">
+                    <span>98</span>
+                    <div class="tooltip">
+                        07-07<br>
+                        Score: 98<br>
+                        Temp: 4.8°C / 11.3°C<br>
+                        Rain: 0.7mm<br>
+                        Wind: 21.1km/h
+                    </div>
+                </div><div class="survival-square" style="background-color: rgb(5, 255, 0);">
+                    <span>99</span>
+                    <div class="tooltip">
+                        07-08<br>
+                        Score: 99<br>
+                        Temp: 6.2°C / 11.7°C<br>
+                        Rain: 1.1mm<br>
+                        Wind: 15.9km/h
+                    </div>
+                </div><div class="survival-square" style="background-color: rgb(31, 255, 0);">
+                    <span>94</span>
+                    <div class="tooltip">
+                        07-09<br>
+                        Score: 94<br>
+                        Temp: 2.9°C / 7.4°C<br>
+                        Rain: 5.7mm<br>
+                        Wind: 20.5km/h
+                    </div>
+                </div><div class="survival-square" style="background-color: rgb(61, 255, 0);">
+                    <span>88</span>
+                    <div class="tooltip">
+                        07-10<br>
+                        Score: 88<br>
+                        Temp: 2.1°C / 7.2°C<br>
+                        Rain: 7.4mm<br>
+                        Wind: 25.7km/h
+                    </div>
+                </div><div class="survival-square" style="background-color: rgb(51, 255, 0);">
+                    <span>90</span>
+                    <div class="tooltip">
+                        07-11<br>
+                        Score: 90<br>
+                        Temp: 2.5°C / 10.5°C<br>
+                        Rain: 0.1mm<br>
+                        Wind: 31.8km/h
+                    </div>
+                </div></div>
+        <div class="legend">
+            <div class="legend-item"><div class="legend-color" style="background-color: #4CAF50;"></div>100 (Green)</div>
+            <div class="legend-item"><div class="legend-color" style="background-color: #FFC107;"></div>50 (Amber)</div>
+            <div class="legend-item"><div class="legend-color" style="background-color: #F44336;"></div>0 (Red)</div>
+        </div>
+        <p style="font-size: 0.9em; color: #777; text-align: center; margin-top: 10px;">This is an invented comfort index, not a meteorological standard.</p>
+    </div>
+
+    <div id="laundry" class="tab-content container" style="display: none;">
+        <h2>Laundry Index</h2>
+        <p>The best drying day was July 05, 2026 with a score of 81. There were 4 days scoring 60 or above, indicating good or perfect drying conditions.</p>
+        <div id="laundryGrid" class="laundry-grid"><div class="laundry-card laundry-perfect">
+                    <div class="emoji">☀️</div>
+                    <div class="date">07-05</div>
+                    <div class="score">81</div>
+                    <div class="band">Perfect drying day</div>
+                    <div class="tooltip">
+                        07-05<br>
+                        Sunshine: 20.3h<br>
+                        Wind: 15.3km/h<br>
+                        Max Temp: 9.2°C<br>
+                        Rain: 0.0mm
+                    </div>
+                </div><div class="laundry-card laundry-good">
+                    <div class="emoji">🌤️</div>
+                    <div class="date">07-06</div>
+                    <div class="score">69</div>
+                    <div class="band">Good drying day</div>
+                    <div class="tooltip">
+                        07-06<br>
+                        Sunshine: 12.4h<br>
+                        Wind: 14.4km/h<br>
+                        Max Temp: 10.8°C<br>
+                        Rain: 0.3mm
+                    </div>
+                </div><div class="laundry-card laundry-good">
+                    <div class="emoji">🌤️</div>
+                    <div class="date">07-07</div>
+                    <div class="score">64</div>
+                    <div class="band">Good drying day</div>
+                    <div class="tooltip">
+                        07-07<br>
+                        Sunshine: 8.7h<br>
+                        Wind: 21.1km/h<br>
+                        Max Temp: 11.3°C<br>
+                        Rain: 0.7mm
+                    </div>
+                </div><div class="laundry-card laundry-slow">
+                    <div class="emoji">☁️</div>
+                    <div class="date">07-08</div>
+                    <div class="score">59</div>
+                    <div class="band">Slow but workable</div>
+                    <div class="tooltip">
+                        07-08<br>
+                        Sunshine: 10.0h<br>
+                        Wind: 15.9km/h<br>
+                        Max Temp: 11.7°C<br>
+                        Rain: 1.1mm
+                    </div>
+                </div><div class="laundry-card laundry-bother">
+                    <div class="emoji">⛈️</div>
+                    <div class="date">07-09</div>
+                    <div class="score">0</div>
+                    <div class="band">Do not bother</div>
+                    <div class="tooltip">
+                        07-09<br>
+                        Sunshine: 12.8h<br>
+                        Wind: 20.5km/h<br>
+                        Max Temp: 7.4°C<br>
+                        Rain: 5.7mm
+                    </div>
+                </div><div class="laundry-card laundry-bother">
+                    <div class="emoji">⛈️</div>
+                    <div class="date">07-10</div>
+                    <div class="score">0</div>
+                    <div class="band">Do not bother</div>
+                    <div class="tooltip">
+                        07-10<br>
+                        Sunshine: 5.5h<br>
+                        Wind: 25.7km/h<br>
+                        Max Temp: 7.2°C<br>
+                        Rain: 7.4mm
+                    </div>
+                </div><div class="laundry-card laundry-good">
+                    <div class="emoji">🌤️</div>
+                    <div class="date">07-11</div>
+                    <div class="score">72</div>
+                    <div class="band">Good drying day</div>
+                    <div class="tooltip">
+                        07-11<br>
+                        Sunshine: 15.4h<br>
+                        Wind: 31.8km/h<br>
+                        Max Temp: 10.5°C<br>
+                        Rain: 0.1mm
+                    </div>
+                </div></div>
+        <div class="legend">
+            <div class="legend-item"><div class="legend-color laundry-perfect"></div>☀️ Perfect drying day (80-100)</div>
+            <div class="legend-item"><div class="legend-color laundry-good"></div>🌤️ Good drying day (60-79)</div>
+            <div class="legend-item"><div class="legend-color laundry-slow"></div>☁️ Slow but workable (40-59)</div>
+            <div class="legend-item"><div class="legend-color laundry-indoors"></div>🌧️ Better indoors (20-39)</div>
+            <div class="legend-item"><div class="legend-color laundry-bother"></div>⛈️ Do not bother (0-19)</div>
+        </div>
+        <p style="font-size: 0.9em; color: #777; text-align: center; margin-top: 10px;">This is an invented index, not a meteorological standard.</p>
+    </div>
+
+    <div class="closing-statement container">
+        <p>The period from July 05, 2026 to July 11, 2026 experienced mean temperatures around 6.4°C, with daily maximums ranging from 7.2°C to 11.7°C. Total rainfall for the 7 days was 15.30 mm, with 6 days recording some precipitation. Sunshine duration varied significantly, totaling 85.09 hours over the week.</p>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            let i, tabcontent, tabbuttons;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+                tabcontent[i].classList.remove("active");
+            }
+            tabbuttons = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tabbuttons.length; i++) {
+                tabbuttons[i].classList.remove("active");
+            }
+            document.getElementById(tabName).style.display = "block";
+            document.getElementById(tabName).classList.add("active");
+            if (evt && evt.currentTarget) {
+                evt.currentTarget.classList.add("active");
+            } else {
+                for (i = 0; i < tabbuttons.length; i++) {
+                    var oc = tabbuttons[i].getAttribute("onclick") || "";
+                    if (oc.indexOf("'" + tabName + "'") !== -1) {
+                        tabbuttons[i].classList.add("active");
+                    }
+                }
+            }
+
+            // Re-render charts when tab is opened to ensure proper sizing
+            if (tabName === 'temperature') renderTemperatureChart();
+            if (tabName === 'precipitation') renderPrecipitationChart();
+            if (tabName === 'sunshine') renderSunshineChart();
+            if (tabName === 'wind') renderWindChart();
+            if (tabName === 'conditions') renderConditionsChart();
+            if (tabName === 'survival') renderSurvivalGrid();
+            if (tabName === 'laundry') renderLaundryGrid();
+        }
+
+        // Chart.js Global Defaults for Pink preset
+        Chart.defaults.font.family = 'Nunito, sans-serif';
+        Chart.defaults.color = '#666';
+        Chart.defaults.borderColor = 'rgba(255,105,180,0.1)'; // Light pink border for grid lines
+
+        // Temperature Chart
+        function renderTemperatureChart() {
+            const ctx = document.getElementById('temperatureChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: days.map(day => day.date.substring(5)), // MM-DD
+                    datasets: [
+                        {
+                            label: 'Max Temp (°C)',
+                            data: days.map(day => day.tmax),
+                            borderColor: '#ff4d94', // Hot pink
+                            backgroundColor: 'rgba(255, 77, 148, 0.2)',
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Mean Temp (°C)',
+                            data: days.map(day => day.tmean),
+                            borderColor: '#c77dff', // Lilac
+                            backgroundColor: 'rgba(199, 125, 255, 0.2)',
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Min Temp (°C)',
+                            data: days.map(day => day.tmin),
+                            borderColor: '#ffb3c6', // Peach
+                            backgroundColor: 'rgba(255, 179, 198, 0.2)',
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#666'
+                            }
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                color: '#666'
+                            },
+                            ticks: {
+                                color: '#666'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Temperature (°C)',
+                                color: '#666'
+                            },
+                            ticks: {
+                                color: '#666'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Precipitation Chart
+        function renderPrecipitationChart() {
+            const ctx = document.getElementById('precipitationChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: days.map(day => day.date.substring(5)),
+                    datasets: [
+                        {
+                            label: 'Precipitation (mm)',
+                            data: days.map(day => day.precip),
+                            backgroundColor: '#e8a598', // Rose gold
+                            borderColor: '#e8a598',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#666'
+                            }
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                color: '#666'
+                            },
+                            ticks: {
+                                color: '#666'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Precipitation (mm)',
+                                color: '#666'
+                            },
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#666'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Sunshine Chart
+        function renderSunshineChart() {
+            const ctx = document.getElementById('sunshineChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: days.map(day => day.date.substring(5)),
+                    datasets: [
+                        {
+                            label: 'Sunshine (hours)',
+                            data: days.map(day => day.sun),
+                            backgroundColor: '#ffb3c6', // Peach
+                            borderColor: '#ffb3c6',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#666'
+                            }
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                color: '#666'
+                            },
+                            ticks: {
+                                color: '#666'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Sunshine (hours)',
+                                color: '#666'
+                            },
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#666'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Wind Chart
+        function renderWindChart() {
+            const ctx = document.getElementById('windChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: days.map(day => day.date.substring(5)),
+                    datasets: [
+                        {
+                            label: 'Max Wind Speed (km/h)',
+                            data: days.map(day => day.wind),
+                            borderColor: '#b8a1e3', // Lavender
+                            backgroundColor: 'rgba(184, 161, 227, 0.2)',
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#666'
+                            }
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                color: '#666'
+                            },
+                            ticks: {
+                                color: '#666'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Wind Speed (km/h)',
+                                color: '#666'
+                            },
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#666'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Conditions Chart
+        function renderConditionsChart() {
+            const conditionCounts = {};
+            days.forEach(day => {
+                conditionCounts[day.code] = (conditionCounts[day.code] || 0) + 1;
+            });
+
+            const labels = Object.keys(conditionCounts);
+            const data = Object.values(conditionCounts);
+
+            const ctx = document.getElementById('conditionsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Days',
+                        data: data,
+                        backgroundColor: [
+                            '#ff4d94', // Hot pink
+                            '#c77dff', // Lilac
+                            '#ffb3c6', // Peach
+                            '#e8a598', // Rose gold
+                            '#b8a1e3', // Lavender
+                            '#ff8fa3'  // Coral pink
+                        ],
+                        borderColor: [
+                            '#ff4d94',
+                            '#c77dff',
+                            '#ffb3c6',
+                            '#e8a598',
+                            '#b8a1e3',
+                            '#ff8fa3'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Horizontal bar chart
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Number of Days',
+                                color: '#666'
+                            },
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#666',
+                                precision: 0
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Condition',
+                                color: '#666'
+                            },
+                            ticks: {
+                                color: '#666'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Survival Grid
+        function renderSurvivalGrid() {
+            const survivalGrid = document.getElementById('survivalGrid');
+            survivalGrid.innerHTML = ''; // Clear previous content
+
+            days.forEach(day => {
+                const score = day.survival;
+                let color;
+                if (score >= 80) {
+                    color = `rgb(${Math.round(255 - (score - 80) * 255 / 20)}, 255, ${Math.round(255 - (score - 80) * 255 / 20)})`; // Greenish
+                } else if (score >= 50) {
+                    color = `rgb(255, ${Math.round(165 + (score - 50) * (255 - 165) / 30)}, 0)`; // Amber to Yellow
+                } else {
+                    color = `rgb(255, ${Math.round(score * 255 / 50)}, ${Math.round(score * 255 / 50)})`; // Reddish
+                }
+                
+                // Simplified color gradient from red to green
+                const r = Math.min(255, Math.round(255 * (100 - score) / 50));
+                const g = Math.min(255, Math.round(255 * score / 50));
+                const b = 0; // Keep blue component low for red-green spectrum
+                
+                // More balanced red-amber-green
+                let red, green, blue;
+                if (score <= 50) { // Red to Amber
+                    red = 255;
+                    green = Math.round(255 * (score / 50));
+                    blue = 0;
+                } else { // Amber to Green
+                    red = Math.round(255 * ((100 - score) / 50));
+                    green = 255;
+                    blue = 0;
+                }
+                color = `rgb(${red}, ${green}, ${blue})`;
+
+
+                const square = document.createElement('div');
+                square.className = 'survival-square';
+                square.style.backgroundColor = color;
+                square.innerHTML = `
+                    <span>${score}</span>
+                    <div class="tooltip">
+                        ${day.date.substring(5)}<br>
+                        Score: ${score}<br>
+                        Temp: ${day.tmin}°C / ${day.tmax}°C<br>
+                        Rain: ${day.precip}mm<br>
+                        Wind: ${day.wind}km/h
+                    </div>
+                `;
+                survivalGrid.appendChild(square);
+            });
+        }
+
+        // Laundry Grid
+        function renderLaundryGrid() {
+            const laundryGrid = document.getElementById('laundryGrid');
+            laundryGrid.innerHTML = ''; // Clear previous content
+
+            days.forEach(day => {
+                const score = day.laundry;
+                let bandClass = '';
+                let bandName = '';
+                let emoji = '';
+
+                if (score >= 80) {
+                    bandClass = 'laundry-perfect';
+                    bandName = 'Perfect drying day';
+                    emoji = '☀️';
+                } else if (score >= 60) {
+                    bandClass = 'laundry-good';
+                    bandName = 'Good drying day';
+                    emoji = '🌤️';
+                } else if (score >= 40) {
+                    bandClass = 'laundry-slow';
+                    bandName = 'Slow but workable';
+                    emoji = '☁️';
+                } else if (score >= 20) {
+                    bandClass = 'laundry-indoors';
+                    bandName = 'Better indoors';
+                    emoji = '🌧️';
+                } else {
+                    bandClass = 'laundry-bother';
+                    bandName = 'Do not bother';
+                    emoji = '⛈️';
+                }
+
+                const card = document.createElement('div');
+                card.className = `laundry-card ${bandClass}`;
+                card.innerHTML = `
+                    <div class="emoji">${emoji}</div>
+                    <div class="date">${day.date.substring(5)}</div>
+                    <div class="score">${score}</div>
+                    <div class="band">${bandName}</div>
+                    <div class="tooltip">
+                        ${day.date.substring(5)}<br>
+                        Sunshine: ${day.sun.toFixed(1)}h<br>
+                        Wind: ${day.wind.toFixed(1)}km/h<br>
+                        Max Temp: ${day.tmax.toFixed(1)}°C<br>
+                        Rain: ${day.precip.toFixed(1)}mm
+                    </div>
+                `;
+                laundryGrid.appendChild(card);
+            });
+        }
+
+        // Initial render of the first tab and its chart
+        document.addEventListener('DOMContentLoaded', () => {
+            openTab(null, 'temperature');
+        });
+    </script>
+
+</body></html>
